@@ -337,6 +337,12 @@ Examples:
             help="Thinking budget for reasoning models (low/medium/high). Supported by GPT-Oss:20b and other reasoning models.",
         )
         ask_parser.add_argument(
+            "--max-tokens",
+            type=int,
+            default=10000,
+            help="Maximum tokens for LLM response (default: 10000)",
+        )
+        ask_parser.add_argument(
             "--api-base",
             type=str,
             default=None,
@@ -1633,6 +1639,8 @@ Examples:
         llm_kwargs: dict[str, Any] = {}
         if args.thinking_budget:
             llm_kwargs["thinking_budget"] = args.thinking_budget
+        if hasattr(args, "max_tokens"):
+            llm_kwargs["max_tokens"] = args.max_tokens
 
         def _ask_once(prompt: str) -> None:
             query_start_time = time.time()
