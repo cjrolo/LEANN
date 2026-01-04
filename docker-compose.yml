@@ -1,0 +1,42 @@
+services:
+  # Código Sociedades Comerciais (CSC) - Portuguese Commercial Code
+  leann-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: leann-mcp
+    # Needed for ASYNC IO
+    privileged: true
+    ports:
+      - "8901:8000"
+    volumes:
+      # Mount the DiskANN index
+      - ${INDEX_PATH:-./indexes}:/app/.leann/indexes:ro
+      # Mount SSL certificate for backend connection
+      - ${SSL_CERT_PATH}:/certs/gluteus.crt.pem:ro
+    environment:
+      # LLM Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+      # SSL Certificate
+      SSL_CERT_FILE: certs.crt.pem
+      # Python
+      PYTHONUNBUFFERED: 1
+    command: >
+      --index-path test-index-diskann
+      --port 8000
+      --llm-type openai
+      --model ${LLM_MODEL:-gpt-oss-120b}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import requests; requests.get('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
